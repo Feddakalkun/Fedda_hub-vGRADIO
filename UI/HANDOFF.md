@@ -363,6 +363,14 @@ Backup used for this entire change: `E:\v337\BACKUPS\backup_20260609_221505`
 
 The visual identity now matches the user's request.
 
+**Bugfix (same session)**:
+- User encountered a launch crash on the embedded Python:
+  `TypeError: Base.set() got an unexpected keyword argument 'background_fill_hover'`
+- Cause: Hover-related keys are not supported in `.set()` for the Gradio version in `App/python_embeded`.
+- Fixed by removing the invalid keys from the theme `.set()` and handling all hover effects through the `fedda_css` string instead.
+- Added extra CSS rules for blocks, buttons, and tabs to keep the dark cyber aesthetic strong and consistent.
+- The theme is now compatible with the actual runtime environment the user uses.
+
 ---
 
 ## Expansion to multiple workflows (Tabs + LTX)
