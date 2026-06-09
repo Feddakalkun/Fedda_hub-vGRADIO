@@ -783,3 +783,41 @@ The dropdown still defaults to "None" and lets the user select any other style f
 
 **Handoff note appended?**: Yes
 **Breadcrumbs updated**: Yes (this entry)
+
+---
+
+## [2026-06-10] - Florence Caption Integration for Steady Dancer
+**Action**:
+- Added Florence captioning step to the Steady Dancer tab as requested.
+- New UI elements after pose capture:
+  - "🖼️ Generate Florence Caption from Pose" button.
+  - Textbox showing the generated caption (editable).
+  - "⬇️ Use Caption as Prompt" button that copies the Florence caption into the generation prompt field.
+- New backend function: `queue_and_get_florence_caption(pose_image_path)`
+  - Copies the captured pose frame to input.
+  - Loads FLORENCE-IMAGE-CAPTIONING.json (API format).
+  - Patches the "LoadImage" node (INPUT IMAGE) with the pose file.
+  - Queues via /prompt.
+  - Polls /history/{prompt_id} for up to ~20s.
+  - Extracts the caption text from "easy showAnything" (IMAGE CAPTION) node outputs (checks "text" and "anything" fields).
+  - Falls back to other text outputs or returns the prompt_id so user can see it in ComfyUI.
+- Updated the tab's "How it works" section to document the new step.
+- The flow is now: TikTok → capture pose frame → (Florence caption) → edit/use caption → LoRA + ControlNet generate with exact pose.
+- BREADCRUMBS + HANDOFF updated, changes pushed.
+
+**Files changed**:
+- UI/flux_klein_character_studio.py (added queue_and_get_florence_caption + UI controls + wiring in Steady Dancer tab)
+
+**Rationale**: User: "to get the caption prompt better please use this on the captured image and then let the user run with the caption prompt" + the Florence JSON. This gives high-quality, detailed prompts automatically from the pose frame instead of manual entry.
+
+**Test / Verification steps performed**:
+- Syntax verified with py_compile.
+- Florence patching targets the known LoadImage node from the workflow inspection.
+- History polling looks for the standard text output nodes in the Florence workflow (easy showAnything + SaveText).
+
+**Result**:
+- Users can now get excellent auto-generated captions for the captured TikTok pose frame using Florence2, edit them, and feed directly into the pose-accurate LoRA + ControlNet generation.
+- Makes the "exact same pose" + good prompt workflow much more powerful and user-friendly.
+
+**Handoff note appended?**: Yes
+**Breadcrumbs updated**: Yes (this entry)

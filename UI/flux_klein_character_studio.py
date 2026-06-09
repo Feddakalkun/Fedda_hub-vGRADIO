@@ -20,6 +20,7 @@ import json
 import os
 import shutil
 import subprocess
+import time
 from pathlib import Path
 from datetime import datetime
 import requests  # for direct ComfyUI API calls
@@ -389,6 +390,89 @@ def queue_zimage_controlnet_pose(pose_image_path: str, prompt: str, lora_name: s
         return f"❌ Error queuing ControlNet pose: {e}", None
 
 
+def queue_and_get_florence_caption(pose_image_path: str):
+    """
+    Run the FLORENCE-IMAGE-CAPTIONING.json on the captured pose frame.
+    Returns (status_message, caption_text or None)
+    The caption can then be used as the prompt for the pose-matched generation.
+    """
+    florence_path = CUSTOM_DIR / "FLORENCE-IMAGE-CAPTIONING.json"
+    if not florence_path.exists():
+        return f"❌ Florence caption workflow not found: {florence_path}", None
+
+    pose_file = "steady_dancer_pose.png"
+    if pose_image_path and os.path.exists(pose_image_path):
+        shutil.copy2(pose_image_path, COMFY_INPUT / pose_file)
+
+    with open(florence_path, encoding="utf-8") as f:
+        wf = json.load(f)
+
+    updated = []
+    for node_id, node in wf.items():
+        if not isinstance(node, dict):
+            continue
+        ct = node.get("class_type", "")
+        inputs = node.get("inputs", {})
+
+        if ct == "LoadImage" and "image" in inputs:
+            inputs["image"] = pose_file
+            updated.append(f"LoadImage {node_id} → {pose_file} (for captioning)")
+
+    url = "http://127.0.0.1:8188/prompt"
+    payload = {
+        "prompt": wf,
+        "client_id": f"fedda-florence-{int(datetime.now().timestamp())}"
+    }
+
+    try:
+        resp = requests.post(url, json=payload, timeout=25)
+        if resp.status_code != 200:
+            return f"❌ Florence queue failed: {resp.status_code} {resp.text[:300]}", None
+
+        prompt_id = resp.json().get("prompt_id")
+        if not prompt_id:
+            return "❌ No prompt_id returned", None
+
+        # Poll history for the caption output (easy showAnything node usually)
+        for _ in range(40):  # ~20 seconds max
+            time.sleep(0.5)
+            try:
+                hresp = requests.get(f"http://127.0.0.1:8188/history/{prompt_id}", timeout=8)
+                if hresp.status_code == 200:
+                    hist = hresp.json()
+                    if prompt_id in hist:
+                        outputs = hist[prompt_id].get("outputs", {})
+                        # Look for text outputs from caption nodes
+                        for nid, out in outputs.items():
+                            if "text" in out and out.get("text"):
+                                texts = out["text"]
+                                if isinstance(texts, list) and texts:
+                                    caption = str(texts[0]).strip()
+                                    if len(caption) > 5:
+                                        return f"✅ Florence caption ready (id {prompt_id})", caption
+                            if "anything" in out and out.get("anything"):
+                                vals = out["anything"]
+                                if isinstance(vals, list) and vals:
+                                    caption = str(vals[0]).strip()
+                                    if len(caption) > 5:
+                                        return f"✅ Florence caption ready", caption
+                        # Check if completed even if no text found yet
+                        status = hist[prompt_id].get("status", {})
+                        if status.get("completed") or status.get("status_str") == "success":
+                            # fallback: any long string in outputs
+                            for out in outputs.values():
+                                for v in out.values():
+                                    if isinstance(v, list) and v and isinstance(v[0], str) and len(v[0]) > 10:
+                                        return "✅ Caption extracted", str(v[0]).strip()
+            except Exception:
+                pass
+
+        return f"✅ Florence queued (prompt_id: {prompt_id}). Caption should appear in ComfyUI (easy showAnything node). You can copy it manually or re-run.", None
+
+    except Exception as e:
+        return f"❌ Error running Florence caption: {e}", None
+
+
 def queue_to_comfyui(face_path, body_path, prompt, lora_name="None", lora_strength=0.8):
     """
     Direct launch to running ComfyUI via its API.
@@ -717,6 +801,12 @@ with gr.Blocks(
             captured_pose = gr.Image(label="Captured Pose Reference (used for ControlNet)", type="filepath", height=220, interactive=False)
 
             with gr.Row():
+                florence_btn = gr.Button("🖼️ Generate Florence Caption from Pose", variant="secondary")
+                use_caption_btn = gr.Button("⬇️ Use Caption as Prompt", variant="secondary")
+
+            florence_caption = gr.Textbox(label="Florence Generated Caption (edit before generating)", lines=4, interactive=True)
+
+            with gr.Row():
                 with gr.Column():
                     gr.Markdown("### Pose-Matched Generation")
                     sd_prompt = gr.Textbox(
@@ -764,6 +854,24 @@ with gr.Blocks(
                 outputs=[captured_pose, sd_status]
             )
 
+            def do_generate_florence_caption(pose_path):
+                if not pose_path:
+                    return "", "Capture a pose frame first"
+                msg, caption = queue_and_get_florence_caption(pose_path)
+                return caption or "", msg
+
+            florence_btn.click(
+                fn=do_generate_florence_caption,
+                inputs=[captured_pose],
+                outputs=[florence_caption, sd_status]
+            )
+
+            use_caption_btn.click(
+                fn=lambda c: c,
+                inputs=[florence_caption],
+                outputs=[sd_prompt]
+            )
+
             def do_generate_pose(pose_path, prompt, lora, strength):
                 if not pose_path:
                     return None, "Capture a pose frame first"
@@ -788,8 +896,10 @@ with gr.Blocks(
             1. Paste TikTok link → Load video (yt-dlp downloads it).
             2. Play the preview, set Start time to the desired pose moment.
             3. Capture Start Frame → this becomes the ControlNet pose reference.
-            4. Choose your character LoRA + prompt.
-            5. Generate → uses z-image-controlnet-api.json (DWPreprocessor / ControlNet + your LoRA) to create the image with the *exact same pose*.
+            4. (Optional but recommended) Click **Generate Florence Caption** on the captured frame. This runs the FLORENCE-IMAGE-CAPTIONING.json workflow to create a rich descriptive prompt.
+            5. Edit the caption if you want, or click **Use Caption as Prompt**.
+            6. Choose your character LoRA + strength.
+            7. Generate → uses z-image-controlnet-api.json (ControlNet + your LoRA) to create the image with the *exact same pose* + the good caption.
             """)
 
         # ==================== HOME / LANDING TAB ====================

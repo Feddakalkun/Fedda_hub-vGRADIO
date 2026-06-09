@@ -404,6 +404,19 @@ This directly addresses the user's request to combine TikTok video handling with
 
 Test with real TikTok links (public) and the user's character LoRAs. The frame extraction + ControlNet pose transfer is the core "exact same pose" feature.
 
+**Florence Caption Enhancement (same day)**:
+- Per user request: "to get the caption prompt better please use this on the captured image and then let the user run with the caption prompt" + provided FLORENCE-IMAGE-CAPTIONING.json.
+- Added after pose capture:
+  - Button to run Florence on the captured frame.
+  - Editable textbox with the generated caption.
+  - Button to copy the caption directly into the generation prompt.
+- New function `queue_and_get_florence_caption` that patches the LoadImage in the Florence workflow, queues it, polls history, and extracts the text from the "IMAGE CAPTION" (easy showAnything) node.
+- Updated tab instructions.
+- This gives the user a high-quality, detailed starting prompt based on the actual pose frame instead of typing from scratch.
+
+Now the full recommended flow for best results:
+TikTok link → load/preview → choose start time → capture frame → Generate Florence Caption → (edit) Use as Prompt → pick LoRA → Generate pose-matched image.
+
 ---
 
 ## Expansion to multiple workflows (Tabs + LTX)
