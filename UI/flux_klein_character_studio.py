@@ -1,9 +1,12 @@
 r"""
-vGRADIO Studio - Multi-workflow Gradio frontend for ComfyUI
+FEDDAKALKUN Studio - Multi-workflow Gradio frontend for ComfyUI
+
+Brand: FEDDAKALKUN
+Focus: Clean, powerful interfaces for high-quality AI image & video generation.
 
 Current tabs:
 - Klein Character Studio (Flux.2 Klein 9B with 0/1/2 reference images + optional LoRA)
-- LTX Video (advanced video workflows like LTX-23-flf)
+- LTX Video (advanced video workflows)
 - More coming (WAN, Qwen, Z-Image, Audio, etc.)
 
 The goal is clean, focused tabs for each major workflow family, with direct API queuing
@@ -29,6 +32,39 @@ COMFY_INPUT = WORKSPACE / "App" / "ComfyUI" / "input"
 
 CUSTOM_DIR.mkdir(parents=True, exist_ok=True)
 COMFY_INPUT.mkdir(parents=True, exist_ok=True)
+
+# ====================== FEDDAKALKUN Dark Theme ======================
+fedda_theme = gr.themes.Soft(
+    primary_hue="violet",
+    secondary_hue="cyan",
+    neutral_hue="zinc",
+    font=["Inter", "system-ui", "sans-serif"],
+    font_mono=["JetBrains Mono", "monospace"],
+).set(
+    # Strong dark mode
+    background_fill_primary="#0a0a0f",
+    background_fill_secondary="#111114",
+    background_fill_hover="#1a1a20",
+    color_text="#e4e4e7",
+    color_text_label="#a1a1aa",
+    color_text_placeholder="#71717a",
+    color_background_fill="#0a0a0f",
+    color_background_fill_secondary="#111114",
+    border_color_primary="#27272a",
+    block_background_fill="#111114",
+    block_border_color="#27272a",
+    button_primary_background_fill="#7c3aed",
+    button_primary_background_fill_hover="#6d28d9",
+)
+
+# Extra CSS for even darker / cyber feel
+fedda_css = """
+.gradio-container {
+    background: linear-gradient(180deg, #0a0a0f 0%, #0f0f14 100%) !important;
+}
+h1, h2, h3 { color: #e0e0ff !important; }
+.tab-nav { background-color: #111114 !important; border-bottom: 1px solid #27272a !important; }
+"""
 
 # Note: REFS_DIR is kept only because load_pack() currently looks for the prompt .txt packs inside the 20yo woman folder.
 # The old image gallery (get_refs + ref_names) has been removed per user request. Users now drag & drop their own 0/1/2 images.
@@ -285,13 +321,37 @@ def queue_to_comfyui(face_path, body_path, prompt, lora_name="None", lora_streng
         return f"❌ Unexpected error while queuing: {e}", get_recent()
 
 # ====================== UI ======================
-with gr.Blocks(title="vGRADIO Studio - Fedda Hub") as demo:
-    gr.Markdown("# vGRADIO Studio\n**Multi-workflow direct API launcher for ComfyUI**")
+with gr.Blocks(
+    title="FEDDAKALKUN Studio",
+    theme=fedda_theme,
+    css=fedda_css
+) as demo:
+    # FEDDAKALKUN Branded Header with Cyber Bunny Logo
+    with gr.Row():
+        with gr.Column(scale=1, min_width=80):
+            try:
+                gr.Image(
+                    value="assets/feddakalkun_bunny_logo.png",
+                    height=72,
+                    width=72,
+                    interactive=False,
+                    show_label=False,
+                    container=False
+                )
+            except:
+                gr.Markdown("🐰")
+        with gr.Column(scale=4):
+            gr.Markdown("""
+            # FEDDAKALKUN
+            **Precision AI Creative Tools** — Direct ComfyUI Control
+            """)
+
+    gr.Markdown("---")
 
     with gr.Tabs():
         # ==================== KLEIN TAB ====================
-        with gr.TabItem("🎭 Klein Character Studio (Flux.2 9B)"):
-            gr.Markdown("**Clean & focused on consistent character work with 0, 1 or 2 reference images + optional LoRA.**")
+        with gr.TabItem("🎭 Klein Character Studio"):
+            gr.Markdown("**FEDDAKALKUN • Flux.2 Klein 9B** — Consistent character generation with 0, 1 or 2 reference images + optional LoRA.")
 
             with gr.Row():
                 with gr.Column(scale=1):
@@ -392,8 +452,8 @@ with gr.Blocks(title="vGRADIO Studio - Fedda Hub") as demo:
             """)
 
         # ==================== LTX TAB ====================
-        with gr.TabItem("🎬 LTX Video (23)"):
-            gr.Markdown("**Advanced LTX Video workflows** (e.g. LTX-23-flf with guides). More inputs = more advanced control.")
+        with gr.TabItem("🎬 LTX Video"):
+            gr.Markdown("**FEDDAKALKUN • LTX Video (23)** — Advanced video generation with image guides and conditioning.")
 
             with gr.Row():
                 with gr.Column():
@@ -451,17 +511,17 @@ with gr.Blocks(title="vGRADIO Studio - Fedda Hub") as demo:
             """)
 
         # ==================== HOME / LANDING TAB ====================
-        with gr.TabItem("🏠 Workflows Overview"):
+        with gr.TabItem("🏠 Overview"):
             gr.Markdown("""
-            ## Available Workflow Studios
+            ## FEDDAKALKUN • Workflow Studios
 
             Click the tabs above to use each focused studio.
 
             **Currently implemented:**
-            - **Klein Character Studio** — Best for consistent character images with 0-2 refs + LoRA.
-            - **LTX Video (23)** — Advanced LTX video generation with image guides.
+            - **Klein Character Studio** — Best for consistent character images with 0-2 refs + optional LoRA.
+            - **LTX Video** — Advanced LTX video generation with image guides.
 
-            **More workflows you have added (will add dedicated tabs soon):**
+            **More workflows ready to activate:**
             - LTX-23-img2vid, ltx-lipsync
             - Several WAN 2.1 / 2.2 video workflows
             - Qwen edit + multi-angle
@@ -474,7 +534,7 @@ with gr.Blocks(title="vGRADIO Studio - Fedda Hub") as demo:
             - "Queue" buttons send a clean execution prompt directly to your running ComfyUI (http://127.0.0.1:8188).
             - No more manual JSON dragging for the supported paths.
 
-            Want a specific workflow turned into a nice tab next? Just tell me which one (e.g. a Qwen multi-angle or a particular WAN one).
+            This is the official **FEDDAKALKUN** creative control surface.
             """)
 
             gr.Markdown("### Quick Launch All Recent Outputs")
@@ -511,11 +571,11 @@ if __name__ == "__main__":
         free = _find_free_port(7860, 7870)
         if free:
             port = free
-    print(f"Launching on http://127.0.0.1:{port}")
+    print(f"FEDDAKALKUN Studio launching on http://127.0.0.1:{port}")
     demo.launch(
         server_name="127.0.0.1",
         server_port=port,
         inbrowser=True,
-        show_error=True,
-        theme=gr.themes.Soft()
+        show_error=True
+        # theme is already set on Blocks
     )

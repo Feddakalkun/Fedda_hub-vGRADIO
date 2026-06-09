@@ -601,6 +601,44 @@ The dropdown still defaults to "None" and lets the user select any other style f
 
 **Handoff note appended?**: Yes
 **Breadcrumbs updated**: Yes (this entry)
+
+---
+
+## [2026-06-09 ~23:55] - FEDDAKALKUN Rebrand + Dark Theme + Cyber Bunny Logo
+**Action**:
+- Rebranded the entire app to **FEDDAKALKUN** (replaced vGRADIO / Fedda Hub references in code, headers, overview, docstrings, launch messages, and README).
+- Made the UI significantly darker:
+  - Custom `fedda_theme` based on Soft with violet/cyan accents + zinc neutrals.
+  - Strong dark backgrounds (#0a0a0f, #111114).
+  - Added custom CSS for container, tabs, headings, etc.
+- Added cyber bunny logo:
+  - Generated two versions (square icon + banner).
+  - Copied to `UI/assets/feddakalkun_bunny_logo.png` and `feddakalkun_bunny_banner.png`.
+  - Displayed prominently in the header row on every tab.
+- Updated `UI/README.md` to reflect the new FEDDAKALKUN Studio identity and multi-tab nature.
+- Added entry to BREADCRUMBS + HANDOFF.
+- Will commit and push to GitHub.
+
+**Files changed**:
+- UI/flux_klein_character_studio.py (branding, dark theme, logo header, updated tab/overview text)
+- UI/README.md (full rebrand + current state update)
+- UI/BREADCRUMBS.md (this entry)
+- UI/HANDOFF.md
+- UI/assets/ (new logos)
+
+**Rationale**: User explicitly requested: "this app is supposed to use the brand name FEDDAKALKUN. so both in installer and UI use that brand name. I also want the UI more dark, and maybe add a logo of a bunny cyber".
+
+**Test / Verification steps performed**:
+- Syntax check with py_compile → OK.
+- Logo files confirmed in UI/assets/.
+- Theme + CSS applied at Blocks level.
+
+**Result**:
+- The app now launches as **FEDDAKALKUN Studio** with a strong dark cyber aesthetic and the bunny logo front and center.
+- Ready for the installer work to also adopt the FEDDAKALKUN name.
+
+**Handoff note appended?**: Yes
+**Breadcrumbs updated**: Yes (this entry)
 - Ready for commit + push to https://github.com/Feddakalkun/Fedda_hub-vGRADIO.git
 
 **Handoff note appended?**: Yes

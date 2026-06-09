@@ -353,6 +353,18 @@ Backup used for this entire change: `E:\v337\BACKUPS\backup_20260609_221505`
 
 ---
 
+## FEDDAKALKUN Branding, Dark Theme & Logo
+**Latest update**:
+- The app is now officially **FEDDAKALKUN Studio**.
+- Strong dark cyber theme applied (custom violet/cyan Soft theme + heavy CSS overrides).
+- Cyber bunny logo (generated) displayed in the header on all tabs.
+- All user-facing text, titles, overview, README updated to use the FEDDAKALKUN brand name.
+- This branding should also be used in any future installer scripts.
+
+The visual identity now matches the user's request.
+
+---
+
 ## Expansion to multiple workflows (Tabs + LTX)
 **2026-06-09 update**:
 - User has dropped many new workflows into `UI/custom_workflows/` (LTX-23-flf, LTX-23-img2vid, several WAN, Qwen multi-angle/edit, Z-Image variants, audio tools, etc.).
