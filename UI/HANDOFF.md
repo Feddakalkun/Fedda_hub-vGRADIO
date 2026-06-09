@@ -378,6 +378,15 @@ The visual identity now matches the user's request.
 - This approach is much more reliable for `python_embeded` environments.
 - Syntax clean, BREADCRUMBS/HANDOFF updated.
 
+## LTX Tab - Major Win
+**User feedback (2026-06-10)**: "awesome you nailed the LTX first try :)"
+- The LTX Video tab (using LTX-23-flf.json with guide images, prompt, steps/guidance/frames, and video preview) worked end-to-end on the user's first real test run with actual models.
+- This proves the direct API queue + patching pattern generalizes well to complex video workflows (LTXV nodes, conditioning guides, VHS output).
+- Combined with the FEDDAKALKUN dark branding, cyber bunny logo, and tabbed structure, the app is now a functional multi-workflow hub.
+- Next priority: continue adding dedicated tabs for the many other workflows the user has placed in custom_workflows/ (WAN variants, Qwen edit/multi-angle, Z-Image, audio tools, etc.).
+
+Keep the momentum on expanding the tabbed interface while keeping each studio clean and focused.
+
 ---
 
 ## Expansion to multiple workflows (Tabs + LTX)

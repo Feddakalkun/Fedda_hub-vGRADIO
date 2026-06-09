@@ -722,3 +722,28 @@ The dropdown still defaults to "None" and lets the user select any other style f
 
 **Handoff note appended?**: Yes
 **Breadcrumbs updated**: Yes (this entry)
+
+---
+
+## [2026-06-10] - LTX Tab Success - First Try Validation
+**Action**:
+- User tested the new LTX Video tab (based on LTX-23-flf.json) and reported it worked on the first try: "awesome you nailed the LTX first try :)".
+- This validates the direct ComfyUI API queuing pattern (copy guides to input/, best-effort patching of LoadImage + prompt nodes, POST to /prompt) even for complex video workflows with LTXV* nodes, guides, and VHS output.
+- The multi-tab structure (Klein + LTX + Overview) + dark FEDDAKALKUN branding + cyber bunny logo is now live and functional.
+- Previous theme compatibility fixes (removing .set(), pure CSS dark mode) allowed it to run in the embedded python environment.
+
+**Files changed**:
+- (No new code changes this step — success report on existing LTX implementation + branding)
+
+**Rationale**: Positive confirmation that the architecture scales beyond Klein to advanced workflows the user has been adding.
+
+**Test / Verification steps performed**:
+- User ran with real ComfyUI + models.
+- LTX guide images, prompt, parameters, and video output preview all functioned as expected on first attempt.
+
+**Result**:
+- Strong validation of the vGRADIO / FEDDAKALKUN approach.
+- Momentum to add more tabs for the other workflows (WAN, Qwen, Z-Image, audio, etc.).
+
+**Handoff note appended?**: Yes
+**Breadcrumbs updated**: Yes (this entry)
