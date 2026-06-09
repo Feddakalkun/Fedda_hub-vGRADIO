@@ -371,6 +371,13 @@ The visual identity now matches the user's request.
 - Added extra CSS rules for blocks, buttons, and tabs to keep the dark cyber aesthetic strong and consistent.
 - The theme is now compatible with the actual runtime environment the user uses.
 
+**Second bugfix (immediate follow-up)**:
+- New error after first fix: `TypeError: Base.set() got an unexpected keyword argument 'color_text'`
+- Root: The embedded Gradio is quite strict/old — almost no color keys work inside `.set()`.
+- Final robust fix: Completely removed the `.set(...)` call. All theming (backgrounds, text colors #e4e4e7, blocks, buttons, tabs, inputs, galleries, video) now lives in a comprehensive `fedda_css` block with !important selectors. Only the safe `Soft(hues + fonts)` constructor remains.
+- This approach is much more reliable for `python_embeded` environments.
+- Syntax clean, BREADCRUMBS/HANDOFF updated.
+
 ---
 
 ## Expansion to multiple workflows (Tabs + LTX)

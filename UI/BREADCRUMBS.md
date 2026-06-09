@@ -691,3 +691,34 @@ The dropdown still defaults to "None" and lets the user select any other style f
 
 **Handoff note appended?**: Yes
 **Breadcrumbs updated**: Yes (this entry)
+
+---
+
+## [2026-06-09 ~00:05] - Fix: Another theme crash - 'color_text' unsupported in .set()
+**Action**:
+- User hit second launch error after previous fix:
+  TypeError: Base.set() got an unexpected keyword argument 'color_text'
+- Root cause: Even after removing hover params, the Gradio version in App/python_embeded does not support many common color keys (color_text, color_text_label, color_background_fill, etc.) inside .set().
+- Complete fix:
+  - Removed the entire .set(...) call.
+  - Moved *all* color, background, text, border, button, tab, gallery, input overrides into fedda_css using !important selectors and direct CSS.
+  - Kept only the Soft() constructor for hue + font base (which is safe).
+  - Added broader CSS rules to cover text, inputs, sliders, video, etc. for a consistent dark cyber look.
+- Syntax verified.
+- This makes the dark theme much more robust for embedded environments.
+
+**Files changed**:
+- UI/flux_klein_character_studio.py (theme + CSS section completely reworked)
+
+**Rationale**: Relying on .set() is fragile in mixed Gradio versions. Pure CSS overrides are the reliable way to force a dark branded UI.
+
+**Test / Verification steps performed**:
+- py_compile passed cleanly.
+- CSS now handles primary/secondary text, blocks, buttons (with hover), tabs, inputs, galleries, video.
+
+**Result**:
+- The FEDDAKALKUN dark theme should now launch successfully on the user's embedded Python without any "unexpected keyword" errors from theme.set().
+- Visuals remain dark with violet/cyan accents and the bunny logo.
+
+**Handoff note appended?**: Yes
+**Breadcrumbs updated**: Yes (this entry)

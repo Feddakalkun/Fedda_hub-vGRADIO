@@ -34,54 +34,78 @@ CUSTOM_DIR.mkdir(parents=True, exist_ok=True)
 COMFY_INPUT.mkdir(parents=True, exist_ok=True)
 
 # ====================== FEDDAKALKUN Dark Theme ======================
+# Using only the Soft constructor with hue/font overrides.
+# All color overrides are done via CSS because .set() parameters vary across Gradio versions
+# (especially in the embedded python_embeded env). This avoids "unexpected keyword argument" errors.
 fedda_theme = gr.themes.Soft(
     primary_hue="violet",
     secondary_hue="cyan",
     neutral_hue="zinc",
     font=["Inter", "system-ui", "sans-serif"],
     font_mono=["JetBrains Mono", "monospace"],
-).set(
-    # Strong dark mode - only use parameters supported by current Gradio version
-    background_fill_primary="#0a0a0f",
-    background_fill_secondary="#111114",
-    color_text="#e4e4e7",
-    color_text_label="#a1a1aa",
-    color_text_placeholder="#71717a",
-    color_background_fill="#0a0a0f",
-    color_background_fill_secondary="#111114",
-    border_color_primary="#27272a",
-    block_background_fill="#111114",
-    block_border_color="#27272a",
-    button_primary_background_fill="#7c3aed",
 )
 
-# Extra CSS for dark cyber feel + hover effects (moved hover styles here because .set() doesn't support them in this Gradio version)
+# Comprehensive dark cyber CSS. This forces a dark theme regardless of Gradio version.
 fedda_css = """
 .gradio-container {
     background: linear-gradient(180deg, #0a0a0f 0%, #0f0f14 100%) !important;
+    color: #e4e4e7 !important;
 }
-h1, h2, h3 { color: #e0e0ff !important; }
-.tab-nav { background-color: #111114 !important; border-bottom: 1px solid #27272a !important; }
 
-/* Darker blocks and buttons */
-.block {
+/* Text colors */
+h1, h2, h3, h4, label, .gradio-container, .gradio-container * {
+    color: #e4e4e7 !important;
+}
+h1, h2, h3 { color: #c0c0ff !important; }
+
+/* Tabs */
+.tab-nav { 
+    background-color: #111114 !important; 
+    border-bottom: 1px solid #27272a !important; 
+}
+.tab-nav button {
+    color: #a1a1aa !important;
+}
+.tab-nav button.selected {
+    color: #e4e4e7 !important;
+    border-bottom: 2px solid #7c3aed !important;
+}
+
+/* Blocks, panels, inputs */
+.block, .form, .panel, input, textarea, select, .gr-box {
+    background-color: #111114 !important;
+    border-color: #27272a !important;
+    color: #e4e4e7 !important;
+}
+
+/* Buttons */
+button, .gr-button {
+    background-color: #7c3aed !important;
+    color: white !important;
+    border: none !important;
+}
+button:hover, .gr-button:hover {
+    background-color: #6d28d9 !important;
+    filter: brightness(1.1);
+}
+
+/* Galleries */
+.gallery, .gallery-item {
     background-color: #111114 !important;
     border-color: #27272a !important;
 }
-
-/* Button hover */
-button:hover {
-    filter: brightness(1.15);
-}
-
-/* Tab hover */
-.tab-nav button:hover {
-    background-color: #1a1a20 !important;
-}
-
-/* Gallery / image hover */
 .gallery-item:hover {
     filter: brightness(1.1);
+}
+
+/* Video / output */
+video {
+    background-color: #000 !important;
+}
+
+/* Sliders, dropdowns etc. */
+.gr-slider, .gr-dropdown {
+    background-color: #111114 !important;
 }
 """
 
