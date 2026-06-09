@@ -1,0 +1,97 @@
+﻿{
+  "1": {
+    "inputs": {
+      "image": ""
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "Load Source Image"
+    }
+  },
+  "2": {
+    "inputs": {
+      "audio": ""
+    },
+    "class_type": "LoadAudio",
+    "_meta": {
+      "title": "Load Driving Audio (from Fish TTS or upload)"
+    }
+  },
+  "3": {
+    "inputs": {
+      "positive": [
+        "4",
+        0
+      ],
+      "negative": [
+        "5",
+        0
+      ],
+      "image": [
+        "1",
+        0
+      ],
+      "audio": [
+        "2",
+        0
+      ],
+      "num_frames": 97,
+      "seed": -1,
+      "steps": 20,
+      "cfg": 3.5
+    },
+    "class_type": "LTXVImgToVideo",
+    "_meta": {
+      "title": "LTX Image + Audio to Video (lipsync)"
+    }
+  },
+  "4": {
+    "inputs": {
+      "text": "",
+      "clip": [
+        "6",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "Positive Prompt"
+    }
+  },
+  "5": {
+    "inputs": {
+      "text": "",
+      "clip": [
+        "6",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "Negative Prompt"
+    }
+  },
+  "6": {
+    "inputs": {
+      "clip_name": "t5xxl_fp8_e4m3fn_scaled.safetensors",
+      "type": "ltxv"
+    },
+    "class_type": "CLIPLoader",
+    "_meta": {
+      "title": "CLIP Loader (for LTX)"
+    }
+  },
+  "7": {
+    "inputs": {
+      "filename_prefix": "LTX_Lipsync",
+      "images": [
+        "3",
+        0
+      ]
+    },
+    "class_type": "SaveAnimatedWEBP",
+    "_meta": {
+      "title": "Save Lipsync Video"
+    }
+  }
+}

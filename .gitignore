@@ -1,0 +1,94 @@
+# v337 / Fedda Hub vGRADIO - .gitignore
+# Goal: Keep the repo focused on the Gradio UI, workflows JSONs (source), prompt packs (text), and docs.
+# Never commit the huge installed ComfyUI, models, generated images, or embedded python.
+
+# === Huge runtime / install dirs ===
+App/
+4-MODELS/
+*.safetensors
+*.ckpt
+*.pt
+*.pth
+*.bin
+*.onnx
+
+# === Generated / temp outputs ===
+outputs/
+UI/outputs/
+*.png
+*.jpg
+*.jpeg
+*.mp4
+*.webm
+*.gif
+ComfyUI_*.png
+klein_*.png
+
+# === Python / build artifacts ===
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# === IDE / editor ===
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# === OS ===
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# === Backups (we keep the BACKUPS folder out of the new vGRADIO repo) ===
+BACKUPS/
+*.backup
+backup_*/
+
+# === Large asset folders (images) - we keep only .txt prompt packs ===
+2-PROMPTS/**/*.png
+2-PROMPTS/**/*.jpg
+3-POSE/
+2-PROMPTS/0-FOOOCUS STYLES FLUX 275/
+2-PROMPTS/0-FOOOCUS STYLES SDXL 275/
+2-PROMPTS/0-STYLE PICKER FLUX 294/
+2-PROMPTS/0-STYLE PICKER SDXL 294/
+
+# Keep the prompt .txt files and small packs (they are useful for the UI)
+!2-PROMPTS/**/*.txt
+!2-PROMPTS/20yo woman/CHARACTER-BATCH-PROMPTS.txt
+!2-PROMPTS/20yo woman/SURPRISE-GENRE-PACK.txt
+!2-PROMPTS/20yo woman/FLUX-KLEIN-CHARACTER-PROMPTS.txt
+
+# === Old historical prepare outputs (optional to ignore, but they bloat the repo) ===
+UI/custom_workflows/klein_ready_*.json
+UI/custom_workflows/klein_ready_*.meta.json
+UI/custom_workflows/flux_klein_9b_2-reference_recommended_*.json
+UI/custom_workflows/flux_klein_9b_2-reference_recommended_*.meta.json
+
+# === Other noise ===
+*.log
+*.tmp
+.env
+*.zip
+*.7z
+
+# The main UI code + docs + the 3 active lora API jsons + REQUIRED_NODES are intentionally included.

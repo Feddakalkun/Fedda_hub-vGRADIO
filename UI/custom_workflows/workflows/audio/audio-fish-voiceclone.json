@@ -1,0 +1,31 @@
+﻿{
+  "1": {
+    "inputs": {
+      "model_path": "s2-pro",
+      "text": "",
+      "temperature": 0.7,
+      "top_p": 0.7,
+      "repetition_penalty": 1.2,
+      "seed": 42,
+      "reference_audio_file": "",
+      "reference_text": ""
+    },
+    "class_type": "FishS2TTS",
+    "_meta": {
+      "title": "Fish S2 TTS"
+    }
+  },
+  "2": {
+    "inputs": {
+      "filename_prefix": "FishTTS",
+      "audio": [
+        "1",
+        0
+      ]
+    },
+    "class_type": "SaveAudio",
+    "_meta": {
+      "title": "Save Audio"
+    }
+  }
+}
