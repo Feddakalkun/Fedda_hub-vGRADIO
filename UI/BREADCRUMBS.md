@@ -644,6 +644,38 @@ The dropdown still defaults to "None" and lets the user select any other style f
 **Handoff note appended?**: Yes
 **Breadcrumbs updated**: Yes (this entry)
 
+---
+
+## [2026-06-09 ~23:58] - Fix: Theme crash on launch (embedded Python / older Gradio)
+**Action**:
+- User reported crash on launch after the dark theme changes:
+  ```
+  TypeError: Base.set() got an unexpected keyword argument 'background_fill_hover'
+  ```
+- Root cause: `gr.themes.Soft(...).set()` does not accept `background_fill_hover` or `button_primary_background_fill_hover` in the Gradio version shipped with `App/python_embeded`.
+- Fixed by:
+  - Removing the two unsupported `_hover` keys from the `.set()` call.
+  - Moving all hover effects (buttons, tabs, galleries) into `fedda_css`.
+  - Added more CSS rules for blocks and buttons to reinforce the dark look.
+- Syntax verified with `py_compile`.
+- This was a direct result of the user's first successful test run of the rebranded dark UI.
+
+**Files changed**:
+- UI/flux_klein_character_studio.py (theme + CSS section)
+
+**Rationale**: Theming must be compatible with the actual embedded Python environment the launcher uses. We can't assume the latest Gradio theme API.
+
+**Test / Verification steps performed**:
+- `python -m py_compile UI/flux_klein_character_studio.py` → passes cleanly.
+- Theme now only uses proven `.set()` parameters + CSS for extra polish and hovers.
+
+**Result**:
+- The FEDDAKALKUN dark theme should now launch without crashing on the user's embedded Python.
+- Dark cyber aesthetic preserved.
+
+**Handoff note appended?**: Yes
+**Breadcrumbs updated**: Yes (this entry)
+
 **Files changed**:
 - UI/flux_klein_character_studio.py (API selection logic, messages, constant comment)
 

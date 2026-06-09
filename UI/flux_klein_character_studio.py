@@ -41,10 +41,9 @@ fedda_theme = gr.themes.Soft(
     font=["Inter", "system-ui", "sans-serif"],
     font_mono=["JetBrains Mono", "monospace"],
 ).set(
-    # Strong dark mode
+    # Strong dark mode - only use parameters supported by current Gradio version
     background_fill_primary="#0a0a0f",
     background_fill_secondary="#111114",
-    background_fill_hover="#1a1a20",
     color_text="#e4e4e7",
     color_text_label="#a1a1aa",
     color_text_placeholder="#71717a",
@@ -54,16 +53,36 @@ fedda_theme = gr.themes.Soft(
     block_background_fill="#111114",
     block_border_color="#27272a",
     button_primary_background_fill="#7c3aed",
-    button_primary_background_fill_hover="#6d28d9",
 )
 
-# Extra CSS for even darker / cyber feel
+# Extra CSS for dark cyber feel + hover effects (moved hover styles here because .set() doesn't support them in this Gradio version)
 fedda_css = """
 .gradio-container {
     background: linear-gradient(180deg, #0a0a0f 0%, #0f0f14 100%) !important;
 }
 h1, h2, h3 { color: #e0e0ff !important; }
 .tab-nav { background-color: #111114 !important; border-bottom: 1px solid #27272a !important; }
+
+/* Darker blocks and buttons */
+.block {
+    background-color: #111114 !important;
+    border-color: #27272a !important;
+}
+
+/* Button hover */
+button:hover {
+    filter: brightness(1.15);
+}
+
+/* Tab hover */
+.tab-nav button:hover {
+    background-color: #1a1a20 !important;
+}
+
+/* Gallery / image hover */
+.gallery-item:hover {
+    filter: brightness(1.1);
+}
 """
 
 # Note: REFS_DIR is kept only because load_pack() currently looks for the prompt .txt packs inside the 20yo woman folder.
@@ -329,16 +348,17 @@ with gr.Blocks(
     # FEDDAKALKUN Branded Header with Cyber Bunny Logo
     with gr.Row():
         with gr.Column(scale=1, min_width=80):
-            try:
+            logo_path = str(Path(__file__).parent / "assets" / "feddakalkun_bunny_logo.png")
+            if Path(logo_path).exists():
                 gr.Image(
-                    value="assets/feddakalkun_bunny_logo.png",
+                    value=logo_path,
                     height=72,
                     width=72,
                     interactive=False,
                     show_label=False,
                     container=False
                 )
-            except:
+            else:
                 gr.Markdown("🐰")
         with gr.Column(scale=4):
             gr.Markdown("""
