@@ -315,6 +315,20 @@ All standing rules followed.
 
 ---
 
+## Latest: User supplied new no-style Klein workflows
+**Update (2026-06-09)**:
+- User replaced the three `flux_klein_9b_*_reference_lora.json` with fresh exports that completely remove the "Load Styles CSV" node.
+- No changes were needed in `flux_klein_character_studio.py` (style code had already been fully excised).
+- `REQUIRED_NODES.md` was updated (removed Load Styles CSV entry + adjusted the minimal installer profile note).
+- The 0-ref workflow is now even lighter (no ref nodes at all).
+- 1-ref and 2-ref still use `LoadImage` + `ReferenceLatent` for character consistency.
+- BREADCRUMBS and this handoff appended.
+- Changes (docs + the updated JSONs) will be committed and pushed to the vGRADIO GitHub repo.
+
+The UI is now perfectly matched to the user's latest clean, style-free Klein lora workflows.
+
+---
+
 **Final status after verification (2026-06-09 ~22:35)**:
 - Syntax check: OK (`py_compile` passed).
 - Module import test: OK (queue_to_comfyui, get_recent, load_pack all exposed).
@@ -331,6 +345,11 @@ When the user says go on the landing page + cards, the next agent should:
 - Extend REQUIRED_NODES.md for any new class_types introduced.
 
 Backup used for this entire change: `E:\v337\BACKUPS\backup_20260609_221505`
+
+**Additional note from latest update**:
+- User has now provided fully style-free versions of the core Klein lora workflows.
+- `REQUIRED_NODES.md` has been refreshed accordingly.
+- The three main JSONs in `UI/custom_workflows/` (the ones actually loaded by the Queue button) are the source of truth.
 
 - User provided new no-style API JSON: flux_klein_9b_1-reference_no-style-api.json and said to use it instead ("fuck it, lets use this instead without any style node").
 - Updated the script to point API_FORMAT_WORKFLOW to this new file.

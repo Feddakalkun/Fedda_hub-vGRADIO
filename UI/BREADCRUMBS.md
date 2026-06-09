@@ -537,6 +537,41 @@ The dropdown still defaults to "None" and lets the user select any other style f
 - This directly supports the two new files user added (0-ref and 2-ref lora) + the existing 1-ref.
 - Backup created.
 
+---
+
+## [2026-06-09 ~23:10] - User provided new style-free Klein lora workflows (0/1/2 ref)
+**Action**:
+- User exported fresh versions of `flux_klein_9b_0-reference_lora.json`, `flux_klein_9b_1-reference_lora.json`, and `flux_klein_9b_2-reference_lora.json` that no longer contain the "Load Styles CSV" node.
+- Verified via node extraction: "Load Styles CSV" is completely gone from all three files.
+- The Gradio UI code (`flux_klein_character_studio.py`) already had all style-related UI and patching logic removed in prior steps — zero references remained (confirmed with grep).
+- Updated `UI/REQUIRED_NODES.md`:
+  - Changed "Last updated" and source note.
+  - Removed the entire "Load Styles CSV" row from the custom nodes table.
+  - Updated the "Quick Minimal Set" section to reflect that Impact-Pack is no longer needed for styles in the Klein path.
+- Added this breadcrumbs entry.
+- Will update HANDOFF.md and commit/push the doc + JSON changes to the vGRADIO GitHub repo.
+
+**Files changed**:
+- UI/REQUIRED_NODES.md (removed style node, updated notes)
+- UI/BREADCRUMBS.md (this entry)
+- UI/HANDOFF.md (status update)
+- The three `flux_klein_9b_*_reference_lora.json` (user-provided updates — now the canonical no-style versions)
+
+**Rationale**: User explicitly said "I made new workflows now not including the styles node". This simplifies the required node list for the future installer and removes any last remnants of style handling.
+
+**Test / Verification steps performed**:
+- Ran python extraction on the current three lora files — confirmed no "Load Styles CSV".
+- Grepped the studio.py for "style|Style|Load Styles" — clean (0 matches).
+- The dynamic ref-count logic in `queue_to_comfyui` continues to work perfectly (0-ref uses the simpler txt2img path, 1/2-ref use the reference latent paths).
+
+**Result**:
+- The UI is now fully aligned with the user's latest clean no-style Klein workflows.
+- REQUIRED_NODES.md is accurate for the current state (fewer custom nodes required for the Klein Character Studio).
+- Ready for commit + push to https://github.com/Feddakalkun/Fedda_hub-vGRADIO.git
+
+**Handoff note appended?**: Yes
+**Breadcrumbs updated**: Yes (this entry)
+
 **Files changed**:
 - UI/flux_klein_character_studio.py (API selection logic, messages, constant comment)
 

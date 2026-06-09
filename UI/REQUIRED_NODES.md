@@ -8,8 +8,8 @@ It is **critical** for building the custom ComfyUI installer that will be tailor
 
 Format is intentionally simple so it can be parsed by a future installer script (YAML/JSON conversion or direct markdown table parsing).
 
-**Last updated**: 2026-06-09 (after the drag-drop + no-JSON refactor)  
-**Source workflows**: `UI/custom_workflows/flux_klein_9b_0-reference_lora.json`, `_1-...`, `_2-...`
+**Last updated**: 2026-06-09 (user provided fresh no-style versions of the three lora workflows)  
+**Source workflows**: `UI/custom_workflows/flux_klein_9b_0-reference_lora.json`, `flux_klein_9b_1-reference_lora.json`, `flux_klein_9b_2-reference_lora.json` (style-free)
 
 ---
 
@@ -51,7 +51,6 @@ These `class_type` values are added by third-party custom node repositories. The
 | HuggingFaceDownloader     | 🤗 HuggingFace Model Downloader Pro            | jnxmx/ComfyUI_HuggingFace_Downloader **or** if-ai/ComfyUI-IF_AI_HFDownloaderNode | `git clone https://github.com/jnxmx/ComfyUI_HuggingFace_Downloader custom_nodes/ComfyUI_HuggingFace_Downloader`<br>Alternative: https://github.com/if-ai/ComfyUI-IF_AI_HFDownloaderNode | Appears in the workflows for auto model downloads. The title "Pro" version may be one of the IF_AI or similar forks. |
 | easy int                  | easy int                                       | yolain/ComfyUI-Easy-Use                                 | `git clone https://github.com/yolain/ComfyUI-Easy-Use custom_nodes/ComfyUI-Easy-Use` (then run install.bat or pip -r requirements) | Very popular "easy" pack (2.5k+ stars). Provides many quality-of-life nodes. |
 | easy showAnything         | easy showAnything                              | yolain/ComfyUI-Easy-Use                                 | Same as above | Debug / preview helper from the same pack. |
-| Load Styles CSV           | Load Styles CSV                                | ltdrdata/ComfyUI-Impact-Pack (or pythongosssss Custom Scripts / Fooocus style nodes) | `git clone https://github.com/ltdrdata/ComfyUI-Impact-Pack custom_nodes/ComfyUI-Impact-Pack` | Present in the 0-ref and 2-ref lora jsons. (Note: the no-style 1-ref variant removed the need for style handling in UI.) |
 | AspectRatioImageSize      | AspectRatioImageSize                           | ltdrdata/ComfyUI-Impact-Pack **or** yolain/ComfyUI-Easy-Use **or** WAS Node Suite | See Impact-Pack or Easy-Use above | Resolution helper used across the lora variants. |
 
 ---
@@ -76,14 +75,16 @@ These `class_type` values are added by third-party custom node repositories. The
 
 ## Quick "Required for Klein Character Studio" Minimal Set (for a lean installer profile)
 
-If someone wants the absolute smallest set that makes the current Klein UI work:
+If someone wants the absolute smallest set that makes the current Klein UI work (using the style-free lora workflows):
 
 - Recent ComfyUI (with Flux 2 + Klein support)
 - ComfyUI-Easy-Use (for easy int / showAnything + many others)
-- ComfyUI-Impact-Pack (for Load Styles CSV, AspectRatio..., and many common nodes)
+- ComfyUI-Impact-Pack (for AspectRatioImageSize and many common nodes — no longer required for styles)
 - ComfyUI_HuggingFace_Downloader (or equivalent HF downloader the user prefers)
 - pythongosssss/ComfyUI-Custom-Scripts (or rgthree-comfy) for reliable PrimitiveStringMultiline
 - The specific Flux2Klein reference latent / conditioning nodes the user currently has (ComfyUI-Flux2Klein-Enhancer or the subgraphs embedded in the studio JSON)
+
+**Note**: Because the current workflows no longer include the "Load Styles CSV" node, Impact-Pack is less critical for Klein itself (still very useful for the rest of the project).
 
 Everything else in the table is either core or a nice-to-have that the broader project already uses.
 
