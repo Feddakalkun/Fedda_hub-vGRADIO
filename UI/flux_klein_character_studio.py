@@ -19,9 +19,14 @@ import gradio as gr
 import json
 import os
 import shutil
+import subprocess
 from pathlib import Path
 from datetime import datetime
 import requests  # for direct ComfyUI API calls
+try:
+    import yt_dlp
+except ImportError:
+    yt_dlp = None  # will be installed via requirements / launcher
 
 # Paths
 WORKSPACE = Path(__file__).parent.parent.resolve()
@@ -243,6 +248,145 @@ def queue_ltx_workflow(guide1_path, guide2_path, prompt, steps=25, guidance=3.5,
             return f"❌ API error {resp.status_code}\n{resp.text[:600]}", None
     except Exception as e:
         return f"❌ Error queuing LTX: {e}\n\nTip: Export an API version of the workflow for more reliable patching.", None
+
+
+# ====================== Steady Dancer / TikTok Pose Helpers ======================
+def download_tiktok(url: str) -> str:
+    """Download video from TikTok link using yt-dlp into ComfyUI input folder."""
+    if yt_dlp is None:
+        raise RuntimeError("yt-dlp not available. Make sure it is installed (added to requirements.txt).")
+    output_dir = COMFY_INPUT
+    output_template = str(output_dir / "tiktok_%(id)s.%(ext)s")
+    ydl_opts = {
+        "outtmpl": output_template,
+        "format": "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best",
+        "merge_output_format": "mp4",
+        "quiet": True,
+        "no_warnings": True,
+        "extractor_args": {"tiktok": {"api_hostname": "api16-normal-c-useast1a.tiktokv.com"}},
+    }
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        info = ydl.extract_info(url, download=True)
+        video_path = ydl.prepare_filename(info)
+    # Ensure we return the final mp4
+    if not str(video_path).endswith(".mp4"):
+        # yt-dlp with merge should produce mp4
+        base = Path(video_path).with_suffix("")
+        candidate = base.with_suffix(".mp4")
+        if candidate.exists():
+            video_path = str(candidate)
+    return str(video_path)
+
+
+def get_video_duration(video_path: str) -> float:
+    """Get duration in seconds using ffprobe (available in most ComfyUI envs)."""
+    try:
+        cmd = [
+            "ffprobe", "-v", "error", "-show_entries", "format=duration",
+            "-of", "default=noprint_wrappers=1:nokey=1", video_path
+        ]
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+        dur = float(result.stdout.strip())
+        return dur
+    except Exception:
+        return 30.0  # safe fallback
+
+
+def extract_frame(video_path: str, timestamp: float, output_name: str = "steady_dancer_pose.png") -> str:
+    """Extract a single frame at the given timestamp (seconds) using ffmpeg."""
+    output_path = COMFY_INPUT / output_name
+    cmd = [
+        "ffmpeg", "-y", "-ss", str(timestamp), "-i", video_path,
+        "-vframes", "1", "-q:v", "2", str(output_path)
+    ]
+    subprocess.run(cmd, check=True, capture_output=True, timeout=60)
+    return str(output_path)
+
+
+def queue_zimage_controlnet_pose(pose_image_path: str, prompt: str, lora_name: str = "None", lora_strength: float = 0.8):
+    """
+    Queue z-image-controlnet-api.json (or similar) for pose transfer.
+    Uses the captured frame as ControlNet reference + user's LoRA for character.
+    """
+    api_path = CUSTOM_DIR / "z-image-controlnet-api.json"
+    if not api_path.exists():
+        return f"❌ ControlNet workflow not found: {api_path}", None
+
+    pose_file = "steady_dancer_pose.png"
+    if pose_image_path and os.path.exists(pose_image_path):
+        shutil.copy2(pose_image_path, COMFY_INPUT / pose_file)
+
+    with open(api_path, encoding="utf-8") as f:
+        wf = json.load(f)
+
+    updated = []
+    for node_id, node in wf.items():
+        if not isinstance(node, dict):
+            continue
+        ct = node.get("class_type", "")
+        inputs = node.get("inputs", {})
+        meta_title = node.get("_meta", {}).get("title", "")
+
+        # Patch the control / pose image (LoadImage nodes)
+        if ct == "LoadImage" and "image" in inputs:
+            inputs["image"] = pose_file
+            updated.append(f"LoadImage {node_id} → {pose_file} (pose control)")
+
+        # Patch prompt
+        if ct in ("String Literal", "CLIPTextEncode") or "text" in inputs or "Prompt" in meta_title.lower():
+            if "text" in inputs:
+                inputs["text"] = prompt
+                updated.append(f"Prompt {node_id} updated")
+            elif "value" in inputs:
+                inputs["value"] = prompt
+                updated.append(f"Prompt {node_id} updated")
+
+        # Patch LoRA - Power Lora Loader (rgthree) is common in these z-image/controlnet workflows
+        if ct == "Power Lora Loader (rgthree)":
+            if lora_name != "None":
+                # rgthree Power Lora Loader often uses lora_1 / lora_1_strength pattern
+                if "lora_1" in inputs:
+                    inputs["lora_1"] = lora_name
+                    if "lora_1_strength" in inputs:
+                        inputs["lora_1_strength"] = lora_strength
+                    updated.append(f"LoRA {node_id} → {lora_name} strength={lora_strength}")
+                else:
+                    # fallback for other structures
+                    for k in list(inputs.keys()):
+                        if "lora" in k.lower() and isinstance(inputs[k], str):
+                            inputs[k] = lora_name
+                            updated.append(f"LoRA {node_id} set {k}")
+                    if "strength" in str(inputs).lower():
+                        for k in inputs:
+                            if "strength" in k.lower():
+                                inputs[k] = lora_strength
+            else:
+                # disable by setting strength 0 if possible
+                for k in inputs:
+                    if "strength" in k.lower():
+                        inputs[k] = 0.0
+                updated.append(f"LoRA {node_id} disabled (strength 0)")
+
+    url = "http://127.0.0.1:8188/prompt"
+    payload = {
+        "prompt": wf,
+        "client_id": f"fedda-steady-pose-{int(datetime.now().timestamp())}"
+    }
+
+    try:
+        resp = requests.post(url, json=payload, timeout=30)
+        if resp.status_code == 200:
+            pid = resp.json().get("prompt_id", "unknown")
+            return (
+                f"✅ Queued pose-matched image via ControlNet + LoRA!\n"
+                f"Prompt ID: {pid}\n\n"
+                f"Patched: {', '.join(updated) if updated else 'defaults used'}"
+            ), None
+        else:
+            detail = resp.text[:600] if resp.text else ""
+            return f"❌ API error {resp.status_code}\n{detail}", None
+    except Exception as e:
+        return f"❌ Error queuing ControlNet pose: {e}", None
 
 
 def queue_to_comfyui(face_path, body_path, prompt, lora_name="None", lora_strength=0.8):
@@ -552,6 +696,100 @@ with gr.Blocks(
             - The workflow (LTX-23-flf.json) uses guide images + conditioning for better motion/control.
             - Make sure the required LTX models + custom nodes (LTXV*, VHS, rgthree, etc.) are installed in your ComfyUI.
             - Output preview looks for the latest .mp4 in ComfyUI/output.
+            """)
+
+        # ==================== STEADY DANCER / TIKTOK POSE TAB ====================
+        with gr.TabItem("💃 Steady Dancer (TikTok Pose)"):
+            gr.Markdown("**FEDDAKALKUN • TikTok → Pose Frame → LoRA + ControlNet Image**")
+            gr.Markdown("Add a TikTok link → preview & trim video → capture start frame pose → generate new image with your LoRA in the *exact same pose* using the Z-Image ControlNet workflow.")
+
+            with gr.Row():
+                tiktok_url = gr.Textbox(label="TikTok URL", placeholder="https://www.tiktok.com/@user/video/1234567890", scale=4)
+                load_video_btn = gr.Button("Load & Preview Video", variant="secondary", scale=1)
+
+            video_preview = gr.Video(label="Video Preview (play to check timing)", interactive=False, height=280)
+
+            with gr.Row():
+                start_sec = gr.Slider(0, 60, value=0, step=0.1, label="Start time (sec) - frame to capture for pose")
+                end_sec = gr.Slider(0, 60, value=5, step=0.1, label="End time (sec) - optional trim reference")
+                capture_btn = gr.Button("📸 Capture Start Frame as Pose", variant="primary")
+
+            captured_pose = gr.Image(label="Captured Pose Reference (used for ControlNet)", type="filepath", height=220, interactive=False)
+
+            with gr.Row():
+                with gr.Column():
+                    gr.Markdown("### Pose-Matched Generation")
+                    sd_prompt = gr.Textbox(
+                        label="Prompt (describe the new scene/character while keeping the pose)",
+                        lines=2,
+                        value="the same person in exact same pose, highly detailed, cinematic lighting, photorealistic"
+                    )
+                    sd_lora = gr.Dropdown(choices=LORA_CHOICES, value="None", label="Character LoRA")
+                    sd_lora_strength = gr.Slider(0.0, 2.0, value=0.85, step=0.05, label="LoRA Strength")
+                    generate_btn = gr.Button("🚀 Generate Image with Exact Pose + LoRA", variant="primary", size="lg")
+
+                with gr.Column():
+                    sd_result = gr.Image(label="Generated Pose-Matched Image", height=320)
+                    sd_status = gr.Textbox(label="Status / Log", lines=6, interactive=False)
+
+            def do_load_tiktok(url):
+                if not url or not url.strip():
+                    return None, "Please enter a TikTok URL"
+                try:
+                    video_path = download_tiktok(url.strip())
+                    dur = get_video_duration(video_path)
+                    # clamp sliders later via updates if needed
+                    return video_path, f"✅ Video loaded: {Path(video_path).name} (duration ~{dur:.1f}s)"
+                except Exception as e:
+                    return None, f"❌ Download failed: {e}\n(Make sure yt-dlp is installed and TikTok link is public)"
+
+            load_video_btn.click(
+                fn=do_load_tiktok,
+                inputs=[tiktok_url],
+                outputs=[video_preview, sd_status]
+            )
+
+            def do_capture(video_path, start_t):
+                if not video_path:
+                    return None, "Load a video first"
+                try:
+                    frame_path = extract_frame(video_path, float(start_t))
+                    return frame_path, f"✅ Captured frame at {start_t}s → {Path(frame_path).name}"
+                except Exception as e:
+                    return None, f"❌ Frame capture failed: {e}"
+
+            capture_btn.click(
+                fn=do_capture,
+                inputs=[video_preview, start_sec],
+                outputs=[captured_pose, sd_status]
+            )
+
+            def do_generate_pose(pose_path, prompt, lora, strength):
+                if not pose_path:
+                    return None, "Capture a pose frame first"
+                msg, _ = queue_zimage_controlnet_pose(pose_path, prompt, lora, strength)
+                # try to show latest generated image
+                latest = None
+                out_dir = WORKSPACE / "App" / "ComfyUI" / "output"
+                if out_dir.exists():
+                    imgs = sorted(out_dir.glob("*.png"), key=lambda x: x.stat().st_mtime, reverse=True)
+                    if imgs:
+                        latest = str(imgs[0])
+                return latest, msg
+
+            generate_btn.click(
+                fn=do_generate_pose,
+                inputs=[captured_pose, sd_prompt, sd_lora, sd_lora_strength],
+                outputs=[sd_result, sd_status]
+            )
+
+            gr.Markdown("""
+            **How it works (Steady Dancer Pose Flow):**
+            1. Paste TikTok link → Load video (yt-dlp downloads it).
+            2. Play the preview, set Start time to the desired pose moment.
+            3. Capture Start Frame → this becomes the ControlNet pose reference.
+            4. Choose your character LoRA + prompt.
+            5. Generate → uses z-image-controlnet-api.json (DWPreprocessor / ControlNet + your LoRA) to create the image with the *exact same pose*.
             """)
 
         # ==================== HOME / LANDING TAB ====================

@@ -747,3 +747,39 @@ The dropdown still defaults to "None" and lets the user select any other style f
 
 **Handoff note appended?**: Yes
 **Breadcrumbs updated**: Yes (this entry)
+
+---
+
+## [2026-06-10] - Steady Dancer Tab: TikTok → Pose Capture → LoRA + ControlNet Image
+**Action**:
+- Implemented new "💃 Steady Dancer (TikTok Pose)" tab per user request.
+- Features:
+  - TikTok URL input + yt-dlp download (added yt-dlp to requirements.txt).
+  - Video preview (gr.Video).
+  - Start/End time sliders for selecting segment and capture point.
+  - "Capture Start Frame as Pose" using ffmpeg (extracts frame at chosen timestamp).
+  - Captured frame shown as pose reference.
+  - Generation section: prompt + LoRA dropdown (reuses existing LORA_CHOICES) + strength.
+  - Queues `z-image-controlnet-api.json` (API format) patching LoadImage (for the pose/control image), prompt nodes, and Power Lora Loader (rgthree).
+  - Output shows the generated image (latest from ComfyUI/output).
+- Helper functions added: download_tiktok, get_video_duration, extract_frame, queue_zimage_controlnet_pose.
+- Uses the same direct API queue pattern that worked for Klein and LTX.
+- Updated BREADCRUMBS + HANDOFF.
+
+**Files changed**:
+- UI/requirements.txt (added yt-dlp)
+- UI/flux_klein_character_studio.py (new helpers + full Steady Dancer tab + integration with z-image-controlnet-api)
+
+**Rationale**: User specifically asked for TikTok link support, video preview, start/end selection, start frame capture, and then pose-matched image generation with LoRA using z-image-controlnet (or similar) for "exact same pose".
+
+**Test / Verification steps performed**:
+- Syntax check (py_compile) passed.
+- Logic mirrors successful previous tabs (Klein/LTX).
+- Patching targets common nodes in the controlnet API workflow (LoadImage, text prompts, rgthree LoRA loader).
+
+**Result**:
+- New tab ready for user to test with real TikTok links and their LoRAs.
+- Combines video handling (for pose reference) with the powerful z-image ControlNet + LoRA workflow.
+
+**Handoff note appended?**: Yes
+**Breadcrumbs updated**: Yes (this entry)

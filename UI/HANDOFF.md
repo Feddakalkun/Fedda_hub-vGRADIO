@@ -387,6 +387,23 @@ The visual identity now matches the user's request.
 
 Keep the momentum on expanding the tabbed interface while keeping each studio clean and focused.
 
+## Steady Dancer (TikTok Pose to Image) - New Challenge
+**2026-06-10 update**:
+- New tab "💃 Steady Dancer (TikTok Pose)" implemented.
+- Full flow:
+  - TikTok URL → yt-dlp download to input folder.
+  - Video preview + Start/End sliders.
+  - Capture start frame as pose reference (ffmpeg).
+  - Then generate image using the captured frame as ControlNet input + user LoRA for "exact same pose".
+- Backend uses `z-image-controlnet-api.json` (the one user suggested) with patching for LoadImage (pose), prompt, and Power Lora Loader (rgthree).
+- Reuses existing LoRA scanning and direct queue infrastructure.
+- Added yt-dlp to requirements.txt.
+- BREADCRUMBS + HANDOFF updated, changes pushed to GitHub.
+
+This directly addresses the user's request to combine TikTok video handling with pose-accurate LoRA + ControlNet image generation (using Steady Dancer concept + z-image controlnet workflow).
+
+Test with real TikTok links (public) and the user's character LoRAs. The frame extraction + ControlNet pose transfer is the core "exact same pose" feature.
+
 ---
 
 ## Expansion to multiple workflows (Tabs + LTX)

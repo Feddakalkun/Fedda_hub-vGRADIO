@@ -3,5 +3,6 @@ Pillow
 requests
 numpy
 websockets>=13.0.0,<15.1.0
+yt-dlp
 # For future ComfyUI API integration and better image handling
 # Note: we pin websockets because the embedded ComfyUI env often has conflicts with google-genai or other packages.
