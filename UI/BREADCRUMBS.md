@@ -567,6 +567,40 @@ The dropdown still defaults to "None" and lets the user select any other style f
 **Result**:
 - The UI is now fully aligned with the user's latest clean no-style Klein workflows.
 - REQUIRED_NODES.md is accurate for the current state (fewer custom nodes required for the Klein Character Studio).
+
+---
+
+## [2026-06-09 ~23:40] - Started multi-workflow expansion using Gradio Tabs
+**Action**:
+- User reported adding many new workflows (LTX, WAN, Qwen, Z-Image, audio, etc.) and asked about landing page vs tabs + getting advanced ones (specifically LTX-23-flf.json) working.
+- Refactored the main UI into a tabbed interface:
+  - "🎭 Klein Character Studio" — existing clean implementation (unchanged behavior).
+  - "🎬 LTX Video (23)" — new dedicated tab with guide image uploads, prompt, basic parameters (steps, guidance, frame count), Queue button, and video preview.
+  - "🏠 Workflows Overview" — simple landing-style dashboard listing current + planned workflows + global recent outputs gallery.
+- Added `queue_ltx_workflow()` that loads LTX-23-flf.json, copies guide images, does best-effort patching of LoadImage + prompt nodes (works for both full UI and API format), and queues via /prompt.
+- Updated module docstring.
+- Added this breadcrumbs entry + updated HANDOFF.
+- Changes will be committed/pushed to the vGRADIO GitHub repo.
+
+**Files changed**:
+- UI/flux_klein_character_studio.py (major structural refactor to Tabs + new LTX tab + queue function)
+- UI/BREADCRUMBS.md (this entry)
+- UI/HANDOFF.md (update)
+
+**Rationale**: Tabs are the most practical and clean way to scale in Gradio while keeping each workflow focused (exactly what the user was asking). A nice card-based home tab is included as the "landing" view. LTX was chosen as the first advanced one because the user specifically called it out.
+
+**Test / Verification steps performed**:
+- Python syntax check passed after the refactor.
+- The Klein tab re-uses the exact previous logic.
+- New LTX tab has a reasonable set of controls for a guide-based video workflow.
+- The queue function follows the same direct API philosophy as Klein.
+
+**Result**:
+- You can now switch between Klein and LTX (and the overview) in one app.
+- The LTX tab is a solid starting point. It will likely need tuning of the exact node patching once you test it with real ComfyUI (tell me what nodes are getting the images/prompt or share an API-format export of the LTX workflow for even better reliability).
+
+**Handoff note appended?**: Yes
+**Breadcrumbs updated**: Yes (this entry)
 - Ready for commit + push to https://github.com/Feddakalkun/Fedda_hub-vGRADIO.git
 
 **Handoff note appended?**: Yes

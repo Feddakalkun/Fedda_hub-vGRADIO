@@ -351,6 +351,25 @@ Backup used for this entire change: `E:\v337\BACKUPS\backup_20260609_221505`
 - `REQUIRED_NODES.md` has been refreshed accordingly.
 - The three main JSONs in `UI/custom_workflows/` (the ones actually loaded by the Queue button) are the source of truth.
 
+---
+
+## Expansion to multiple workflows (Tabs + LTX)
+**2026-06-09 update**:
+- User has dropped many new workflows into `UI/custom_workflows/` (LTX-23-flf, LTX-23-img2vid, several WAN, Qwen multi-angle/edit, Z-Image variants, audio tools, etc.).
+- Refactored the app to use `gr.Tabs()`:
+  - Klein remains the polished first tab.
+  - New "LTX Video (23)" tab with guide image support + basic controls + video output preview.
+  - "Workflows Overview" tab acts as a simple landing/dashboard.
+- Added `queue_ltx_workflow` following the same direct-to-ComfyUI API pattern.
+- LTX-23-flf is a complex video workflow (many LTXV* nodes, guides, VHS output, etc.). The current implementation does best-effort patching. For best results, user should export an **API format** version of the LTX workflow.
+- BREADCRUMBS + HANDOFF updated.
+- Pushed to the vGRADIO GitHub repo.
+
+**Next for this direction**:
+- User can request specific workflows to get dedicated nice tabs (e.g. a particular WAN or Qwen one).
+- We can improve the LTX tab as we test (more parameters, better node targeting, audio support if the workflow uses it).
+- Eventually we can make the Home tab prettier with actual styled cards.
+
 - User provided new no-style API JSON: flux_klein_9b_1-reference_no-style-api.json and said to use it instead ("fuck it, lets use this instead without any style node").
 - Updated the script to point API_FORMAT_WORKFLOW to this new file.
 - Completely removed style selector from UI (dropdown, choices, wiring).
